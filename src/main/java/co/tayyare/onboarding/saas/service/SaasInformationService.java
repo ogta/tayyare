@@ -39,18 +39,6 @@ public class SaasInformationService implements ISaasInformationService {
         return getSaasInformation(saasInfoDAO);
     }
 
-    private DAOSaasInfo setSaasInformationDAO(SaasInformation saasInformation, DAOUserInfo owner) {
-        DAOSaasInfo saasInfoDAO = new DAOSaasInfo();
-        UUID saasToken = UUID.randomUUID();
-        saasInfoDAO.setName(saasInformation.getName());
-        saasInfoDAO.setPack(saasInformation.getPack());
-        saasInfoDAO.setStatus(SaasStatus.ACTIVE.value);
-        saasInfoDAO.setSaasToken(saasToken.toString());
-        saasInfoDAO.setUniqueValue(saasInformation.getUniqueValue());
-        saasInfoDAO.setOwnerInfo(owner);
-        return saasInfoDAO;
-    }
-
     @Override
     public SaasInformation getSaasProjectInformation(long id) {
         DAOSaasInfo saasInfoDAO = saasInformationRepository.findBySaasID(id);
@@ -76,6 +64,18 @@ public class SaasInformationService implements ISaasInformationService {
         response.setResponseCode(SaasServiceResponse.SUCCESS.getResponseCode());
         response.setResponseDescription(SaasServiceResponse.SUCCESS.getResponseDescription());
         return response;
+    }
+
+    private DAOSaasInfo setSaasInformationDAO(SaasInformation saasInformation, DAOUserInfo owner) {
+        DAOSaasInfo saasInfoDAO = new DAOSaasInfo();
+        UUID saasToken = UUID.randomUUID();
+        saasInfoDAO.setName(saasInformation.getName());
+        saasInfoDAO.setPack(saasInformation.getPack());
+        saasInfoDAO.setStatus(SaasStatus.ACTIVE.value);
+        saasInfoDAO.setSaasToken(saasToken.toString());
+        saasInfoDAO.setUniqueValue(saasInformation.getUniqueValue());
+        saasInfoDAO.setOwnerInfo(owner);
+        return saasInfoDAO;
     }
 
 }

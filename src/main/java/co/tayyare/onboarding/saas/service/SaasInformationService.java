@@ -34,6 +34,12 @@ public class SaasInformationService implements ISaasInformationService {
             return response;
         }
 
+        DAOSaasInfo saasInfoDAO = setSaasInformationDAO(saasInformation, owner);
+        saasInfoDAO = saasInformationRepository.save(saasInfoDAO);
+        return getSaasInformation(saasInfoDAO);
+    }
+
+    private DAOSaasInfo setSaasInformationDAO(SaasInformation saasInformation, DAOUserInfo owner) {
         DAOSaasInfo saasInfoDAO = new DAOSaasInfo();
         UUID saasToken = UUID.randomUUID();
         saasInfoDAO.setName(saasInformation.getName());
@@ -42,8 +48,7 @@ public class SaasInformationService implements ISaasInformationService {
         saasInfoDAO.setSaasToken(saasToken.toString());
         saasInfoDAO.setUniqueValue(saasInformation.getUniqueValue());
         saasInfoDAO.setOwnerInfo(owner);
-        saasInfoDAO = saasInformationRepository.save(saasInfoDAO);
-        return getSaasInformation(saasInfoDAO);
+        return saasInfoDAO;
     }
 
     @Override

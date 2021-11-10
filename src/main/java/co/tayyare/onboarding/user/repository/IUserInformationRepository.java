@@ -6,11 +6,13 @@ import org.springframework.data.repository.CrudRepository;
 
 public interface IUserInformationRepository extends CrudRepository<DAOUserInfo, Long> {
 
-    DAOUserInfo findByUserId(long id);
+    DAOUserInfo findByUserId(Long id);
 
     DAOUserInfo findByUsernameAndSaasInfo(String username, DAOSaasInfo saasInfo);
 
     DAOUserInfo findByEmailAndSaasInfo(String email, DAOSaasInfo saasInfo);
+
+    DAOUserInfo findByEmail(String email);
 
     DAOUserInfo findByPhoneAndSaasInfo(String phone, DAOSaasInfo saasInfo);
 

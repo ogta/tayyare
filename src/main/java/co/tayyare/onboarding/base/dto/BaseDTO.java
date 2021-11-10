@@ -1,4 +1,4 @@
-package co.tayyare.onboarding.saas.dto;
+package co.tayyare.onboarding.base.dto;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -7,7 +7,7 @@ public class BaseDTO {
 
     @Getter
     @Setter
-    private int responseCode;
+    private Integer responseCode;
 
     @Getter
     @Setter

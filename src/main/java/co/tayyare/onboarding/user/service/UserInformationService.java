@@ -1,7 +1,6 @@
 package co.tayyare.onboarding.user.service;
 
 import co.tayyare.onboarding.saas.dao.DAOSaasInfo;
-import co.tayyare.onboarding.saas.dto.SaasInformation;
 import co.tayyare.onboarding.saas.repository.ISaasInformationRepository;
 import co.tayyare.onboarding.saas.util.constant.SaasServiceResponse;
 import co.tayyare.onboarding.user.dao.DAOUserInfo;
@@ -27,7 +26,7 @@ public class UserInformationService implements IUserInformationService {
 
     @Override
     public UserInformation createSaasUserInformation(UserInformation userInformation) {
-        DAOSaasInfo saasInfo = saasInformationRepository.findBySaasID(userInformation.getSaasId());
+        DAOSaasInfo saasInfo = saasInformationRepository.findBySaasToken(userInformation.getSaasToken());
         if (saasInfo == null) {
             UserInformation response = new UserInformation();
             response.setResponseCode(SaasServiceResponse.SAAS_NOT_FOUND.getResponseCode());
@@ -35,7 +34,7 @@ public class UserInformationService implements IUserInformationService {
             return response;
         }
 
-        UserInformation checkUniqueValues = checkUniqueValues(userInformation, saasInfo);
+        UserInformation checkUniqueValues = checkUniqueValueValidation(userInformation, saasInfo);
         if (checkUniqueValues != null) return checkUniqueValues;
 
         DAOUserInfo existUser = saasUserExist(userInformation, saasInfo);
@@ -70,7 +69,40 @@ public class UserInformationService implements IUserInformationService {
 
     }
 
-    private UserInformation checkUniqueValues(UserInformation userInformation, DAOSaasInfo saasInfo) {
+    @Override
+    public UserInformation createAdminUserInformation(UserInformation userInformation) {
+
+        DAOUserInfo existUser = userInformationRepository.findByEmail(userInformation.getEmail());
+
+        if (existUser != null) {
+            UserInformation response = new UserInformation();
+            response.setResponseCode(UserServiceResponse.USERNAME_OR_MAIL_ALREADY_EXIST.getResponseCode());
+            response.setResponseDescription(UserServiceResponse.USERNAME_OR_MAIL_ALREADY_EXIST.getResponseDescription());
+            return response;
+        }
+
+        UUID mailHash = UUID.randomUUID();
+
+        DAOUserInfo userInfo = new DAOUserInfo();
+        userInfo.setEmail(userInformation.getEmail());
+        userInfo.setUsername(userInformation.getUsername());
+        userInfo.setPassword(userInformation.getPassword());
+        userInfo.setDeviceId(userInformation.getDeviceId());
+        userInfo.setPhone(userInformation.getPhone());
+        userInfo.setStatus(UserStatus.ACTIVE.value);
+        userInfo.setMailHash(mailHash.toString());
+
+        DAOUserInfo user = userInformationRepository.save(userInfo);
+
+        userInformation.setUserId(user.getUserId());
+        userInformation.setStatus(user.getStatus());
+        userInformation.setResponseCode(UserServiceResponse.SUCCESS.getResponseCode());
+        userInformation.setResponseDescription(UserServiceResponse.SUCCESS.getResponseDescription());
+
+        return userInformation;
+    }
+
+    private UserInformation checkUniqueValueValidation(UserInformation userInformation, DAOSaasInfo saasInfo) {
         if (saasInfo.getUniqueValue().equals(SaasUniqueValue.EMAIL.value) && !StringUtils.hasText(userInformation.getEmail())) {
             UserInformation response = new UserInformation();
             response.setResponseCode(UserServiceResponse.EMAIL_REQUIRED.getResponseCode());
@@ -81,13 +113,11 @@ public class UserInformationService implements IUserInformationService {
             response.setResponseCode(UserServiceResponse.PHONE_REQUIRED.getResponseCode());
             response.setResponseDescription(UserServiceResponse.PHONE_REQUIRED.getResponseDescription());
             return response;
-        } else {
-            if (!StringUtils.hasText(userInformation.getUsername())) {
-                UserInformation response = new UserInformation();
-                response.setResponseCode(UserServiceResponse.USERNAME_REQUIRED.getResponseCode());
-                response.setResponseDescription(UserServiceResponse.USERNAME_REQUIRED.getResponseDescription());
-                return response;
-            }
+        } else if (saasInfo.getUniqueValue().equals(SaasUniqueValue.USERNAME.value) && !StringUtils.hasText(userInformation.getUsername())) {
+            UserInformation response = new UserInformation();
+            response.setResponseCode(UserServiceResponse.USERNAME_REQUIRED.getResponseCode());
+            response.setResponseDescription(UserServiceResponse.USERNAME_REQUIRED.getResponseDescription());
+            return response;
         }
 
         return null;
@@ -95,17 +125,15 @@ public class UserInformationService implements IUserInformationService {
 
     private DAOUserInfo saasUserExist(UserInformation userInformation, DAOSaasInfo saasInfo) {
 
-        DAOUserInfo existUser = null;
-
         if (saasInfo.getUniqueValue().equals(SaasUniqueValue.EMAIL.value)) {
-            existUser = userInformationRepository.findByEmailAndSaasInfo(userInformation.getEmail(), saasInfo);
+            return userInformationRepository.findByEmailAndSaasInfo(userInformation.getEmail(), saasInfo);
         } else if (saasInfo.getUniqueValue().equals(SaasUniqueValue.PHONE.value)) {
-            existUser = userInformationRepository.findByPhoneAndSaasInfo(userInformation.getPhone(), saasInfo);
-        } else {
-            existUser = userInformationRepository.findByUsernameAndSaasInfo(userInformation.getUsername(), saasInfo);
+            return userInformationRepository.findByPhoneAndSaasInfo(userInformation.getPhone(), saasInfo);
+        } else if (saasInfo.getUniqueValue().equals(SaasUniqueValue.USERNAME.value)) {
+            return userInformationRepository.findByUsernameAndSaasInfo(userInformation.getUsername(), saasInfo);
         }
 
-        return existUser;
+        return null;
     }
 
 }

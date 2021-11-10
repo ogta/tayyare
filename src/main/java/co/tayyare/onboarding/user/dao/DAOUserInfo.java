@@ -15,7 +15,7 @@ public class DAOUserInfo {
     @Getter
     @Setter
     @Column(name = "user_id")
-    private long userId;
+    private Long userId;
 
 
     @Getter

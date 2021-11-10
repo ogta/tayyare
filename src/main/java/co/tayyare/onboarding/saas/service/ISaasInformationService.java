@@ -6,5 +6,5 @@ public interface ISaasInformationService {
 
     SaasInformation createSaasProjectInformation(SaasInformation saasInformation);
 
-    SaasInformation getSaasProjectInformation(long id);
+    SaasInformation getSaasProjectInformation(String saasToken);
 }

@@ -15,7 +15,7 @@ public class DAOSaasInfo {
     @Getter
     @Setter
     @Column(name = "saas_id")
-    private long saasID;
+    private Long saasID;
 
 
     @Getter

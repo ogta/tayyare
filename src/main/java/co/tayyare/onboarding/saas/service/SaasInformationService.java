@@ -10,17 +10,22 @@ import co.tayyare.onboarding.saas.util.constant.SaasStatus;
 import co.tayyare.onboarding.user.util.constant.UserServiceResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
 public class SaasInformationService implements ISaasInformationService {
 
-    @Autowired
-    private ISaasInformationRepository saasInformationRepository;
+    private final ISaasInformationRepository saasInformationRepository;
 
-    @Autowired
-    private IUserInformationRepository userInformationRepository;
+    private final IUserInformationRepository userInformationRepository;
+
+    public SaasInformationService(ISaasInformationRepository saasInformationRepository, IUserInformationRepository userInformationRepository) {
+        this.saasInformationRepository = saasInformationRepository;
+        this.userInformationRepository = userInformationRepository;
+    }
 
     @Override
     public SaasInformation createSaasProjectInformation(SaasInformation saasInformation) {
@@ -34,19 +39,27 @@ public class SaasInformationService implements ISaasInformationService {
             return response;
         }
 
+        List<DAOSaasInfo> existSaas = saasInformationRepository.findAllByNameAndOwnerInfo(saasInformation.getName(), owner);
+        if (!CollectionUtils.isEmpty(existSaas)) {
+            SaasInformation response = new SaasInformation();
+            response.setResponseCode(SaasServiceResponse.SAAS_NAME_ALREADY_EXIST.getResponseCode());
+            response.setResponseDescription(SaasServiceResponse.SAAS_NAME_ALREADY_EXIST.getResponseDescription());
+            return response;
+        }
+
         DAOSaasInfo saasInfoDAO = setSaasInformationDAO(saasInformation, owner);
         saasInfoDAO = saasInformationRepository.save(saasInfoDAO);
         return getSaasInformation(saasInfoDAO);
     }
 
     @Override
-    public SaasInformation getSaasProjectInformation(long id) {
-        DAOSaasInfo saasInfoDAO = saasInformationRepository.findBySaasID(id);
+    public SaasInformation getSaasProjectInformation(String saasToken) {
+        DAOSaasInfo saasInfoDAO = saasInformationRepository.findBySaasToken(saasToken);
 
         if (saasInfoDAO == null) {
             SaasInformation response = new SaasInformation();
-            response.setResponseCode(SaasServiceResponse.RECORD_NOT_FOUND.getResponseCode());
-            response.setResponseDescription(SaasServiceResponse.RECORD_NOT_FOUND.getResponseDescription());
+            response.setResponseCode(SaasServiceResponse.SAAS_NOT_FOUND.getResponseCode());
+            response.setResponseDescription(SaasServiceResponse.SAAS_NOT_FOUND.getResponseDescription());
             return response;
         }
 
@@ -61,6 +74,7 @@ public class SaasInformationService implements ISaasInformationService {
         response.setStatus(saasInfoDAO.getStatus());
         response.setSaasId(saasInfoDAO.getSaasID());
         response.setUserId(saasInfoDAO.getOwnerInfo().getUserId());
+        response.setUniqueValue(saasInfoDAO.getUniqueValue());
         response.setResponseCode(SaasServiceResponse.SUCCESS.getResponseCode());
         response.setResponseDescription(SaasServiceResponse.SUCCESS.getResponseDescription());
         return response;
@@ -75,6 +89,7 @@ public class SaasInformationService implements ISaasInformationService {
         saasInfoDAO.setSaasToken(saasToken.toString());
         saasInfoDAO.setUniqueValue(saasInformation.getUniqueValue());
         saasInfoDAO.setOwnerInfo(owner);
+        saasInfoDAO.setUniqueValue(saasInformation.getUniqueValue());
         return saasInfoDAO;
     }
 

@@ -1,16 +1,20 @@
 package co.tayyare.onboarding.saas.dto;
 
+import co.tayyare.onboarding.base.dto.BaseDTO;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Column;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 public class SaasInformation extends BaseDTO {
 
     @Getter
     @Setter
-    private long saasId;
+    private Long saasId;
 
+    @NotNull(message = "SaaS name is not null!")
+    @NotBlank(message = "SaaS name is not blank!")
     @Getter
     @Setter
     private String name;
@@ -19,6 +23,8 @@ public class SaasInformation extends BaseDTO {
     @Setter
     private Integer status;
 
+    @NotNull(message = "Pack name is not null!")
+    @NotBlank(message = "Pack name is not blank!")
     @Getter
     @Setter
     private String pack;
@@ -29,8 +35,10 @@ public class SaasInformation extends BaseDTO {
 
     @Getter
     @Setter
-    private long userId;
+    private Long userId;
 
+    @NotNull(message = "SaaS unique value is not null!")
+    @NotBlank(message = "Saas unique value is not blank!")
     @Getter
     @Setter
     private String uniqueValue;
